@@ -44,6 +44,7 @@ use SebastianBergmann\CodeCoverage\Report\PHP as PhpReport;
 use SebastianBergmann\CodeCoverage\Report\Text as TextReport;
 use SebastianBergmann\CodeCoverage\Report\Xml\Facade as XmlReport;
 use SebastianBergmann\Environment\Runtime;
+use SebastianBergmann\Invoker\Invoker;
 
 /**
  * A TestRunner for the Command Line Interface (CLI)
@@ -502,7 +503,17 @@ class TestRunner extends BaseTestRunner
         $result->beStrictAboutOutputDuringTests($arguments['disallowTestOutput']);
         $result->beStrictAboutTodoAnnotatedTests($arguments['disallowTodoAnnotatedTests']);
         $result->beStrictAboutResourceUsageDuringSmallTests($arguments['beStrictAboutResourceUsageDuringSmallTests']);
+        if ($arguments['enforceTimeLimit'] === true) {
+            if (!\class_exists(Invoker::class)) {
+                $this->writeMessage('Error', 'Package phpunit/php-invoker is required for enforcing time limits');
+            }
+            if (!\extension_loaded('pcntl') || \strpos(\ini_get('disable_functions'), 'pcntl') !== false) {
+                $this->writeMessage('Error', 'PHP extension pcntl is required for enforcing time limits');
+            }
+        }
+
         $result->enforceTimeLimit($arguments['enforceTimeLimit']);
+        $result->setDefaultTimeLimit($arguments['defaultTimeLimit']);
         $result->setTimeoutForSmallTests($arguments['timeoutForSmallTests']);
         $result->setTimeoutForMediumTests($arguments['timeoutForMediumTests']);
         $result->setTimeoutForLargeTests($arguments['timeoutForLargeTests']);
@@ -834,6 +845,10 @@ class TestRunner extends BaseTestRunner
                 $arguments['disallowTestOutput'] = $phpunitConfiguration['disallowTestOutput'];
             }
 
+            if (isset($phpunitConfiguration['defaultTimeLimit']) && !isset($arguments['defaultTimeLimit'])) {
+                $arguments['defaultTimeLimit'] = $phpunitConfiguration['defaultTimeLimit'];
+            }
+
             if (isset($phpunitConfiguration['enforceTimeLimit']) && !isset($arguments['enforceTimeLimit'])) {
                 $arguments['enforceTimeLimit'] = $phpunitConfiguration['enforceTimeLimit'];
             }
@@ -1040,6 +1055,7 @@ class TestRunner extends BaseTestRunner
         $arguments['timeoutForLargeTests']                            = isset($arguments['timeoutForLargeTests'])                            ? $arguments['timeoutForLargeTests']                            : 60;
         $arguments['reportUselessTests']                              = isset($arguments['reportUselessTests'])                              ? $arguments['reportUselessTests']                              : true;
         $arguments['strictCoverage']                                  = isset($arguments['strictCoverage'])                                  ? $arguments['strictCoverage']                                  : false;
+        $arguments['defaultTimeLimit']                                = isset($arguments['defaultTimeLimit'])                                ? $arguments['defaultTimeLimit']                                : 0;
         $arguments['disallowTestOutput']                              = isset($arguments['disallowTestOutput'])                              ? $arguments['disallowTestOutput']                              : false;
         $arguments['enforceTimeLimit']                                = isset($arguments['enforceTimeLimit'])                                ? $arguments['enforceTimeLimit']                                : false;
         $arguments['disallowTodoAnnotatedTests']                      = isset($arguments['disallowTodoAnnotatedTests'])                      ? $arguments['disallowTodoAnnotatedTests']                      : false;

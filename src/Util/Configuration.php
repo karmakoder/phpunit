@@ -52,6 +52,7 @@ use PHPUnit\TextUI\ResultPrinter;
  *          beStrictAboutResourceUsageDuringSmallTests="false"
  *          beStrictAboutTestsThatDoNotTestAnything="false"
  *          beStrictAboutTodoAnnotatedTests="false"
+ *          defaultTimeLimit="0"
  *          enforceTimeLimit="false"
  *          timeoutForSmallTests="1"
  *          timeoutForMediumTests="10"
@@ -768,6 +769,13 @@ class Configuration
             $result['strictCoverage'] = $this->getBoolean(
                 (string) $root->getAttribute('beStrictAboutCoversAnnotation'),
                 false
+            );
+        }
+
+        if ($root->hasAttribute('defaultTimeLimit')) {
+            $result['defaultTimeLimit'] = $this->getInteger(
+                (string) $root->getAttribute('defaultTimeLimit'),
+                1
             );
         }
 

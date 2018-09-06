@@ -73,6 +73,7 @@ class Command
         'disallow-test-output'      => null,
         'disallow-resource-usage'   => null,
         'disallow-todo-tests'       => null,
+        'default-time-limit='       => null,
         'enforce-time-limit'        => null,
         'exclude-group='            => null,
         'filter='                   => null,
@@ -609,6 +610,10 @@ class Command
                     $this->arguments['beStrictAboutResourceUsageDuringSmallTests'] = true;
                     break;
 
+                case '--default-time-limit':
+                    $this->arguments['defaultTimeLimit'] = (int) $option[1];
+                    break;
+
                 case '--enforce-time-limit':
                     $this->arguments['enforceTimeLimit'] = true;
                     break;
@@ -984,6 +989,7 @@ Test Execution Options:
   --disallow-test-output      Be strict about output during tests.
   --disallow-resource-usage   Be strict about resource usage during small tests.
   --enforce-time-limit        Enforce time limit based on test size.
+  --default-time-limit=<sec>  Timeout in seconds for tests without @small, @medium or @large
   --disallow-todo-tests       Disallow @todo-annotated tests.
 
   --process-isolation         Run each test in a separate PHP process.

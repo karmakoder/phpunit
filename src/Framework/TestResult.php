@@ -27,6 +27,7 @@ use SebastianBergmann\CodeCoverage\MissingCoversAnnotationException as OriginalM
 use SebastianBergmann\CodeCoverage\UnintentionallyCoveredCodeException;
 use SebastianBergmann\ResourceOperations\ResourceOperations;
 use Throwable;
+use SebastianBergmann\Invoker\Invoker;
 
 /**
  * A TestResult collects the results of executing a test case.
@@ -139,6 +140,11 @@ class TestResult implements Countable
      * @var bool
      */
     protected $beStrictAboutResourceUsageDuringSmallTests = false;
+
+    /**
+     * @var int
+     */
+    protected $defaultTimeLimit = 0;
 
     /**
      * @var bool
@@ -673,9 +679,9 @@ class TestResult implements Countable
 
         try {
             if (!$test instanceof WarningTestCase &&
-                $test->getSize() != \PHPUnit\Util\Test::UNKNOWN &&
+                ($this->defaultTimeLimit || $test->getSize() != \PHPUnit\Util\Test::UNKNOWN) &&
                 $this->enforceTimeLimit &&
-                extension_loaded('pcntl') && class_exists('PHP_Invoker')
+                extension_loaded('pcntl') && class_exists(Invoker::class)
             ) {
                 switch ($test->getSize()) {
                     case \PHPUnit\Util\Test::SMALL:
@@ -689,9 +695,13 @@ class TestResult implements Countable
                     case \PHPUnit\Util\Test::LARGE:
                         $_timeout = $this->timeoutForLargeTests;
                         break;
+
+                    case \PHPUnit\Util\Test::UNKNOWN:
+                        $_timeout = $this->defaultTimeLimit;
+                        break;
                 }
 
-                $invoker = new PHP_Invoker;
+                $invoker = new Invoker;
                 $invoker->invoke([$test, 'runBare'], [], $_timeout);
             } else {
                 $test->runBare();
@@ -1194,6 +1204,14 @@ class TestResult implements Countable
     public function wasSuccessful()
     {
         return empty($this->errors) && empty($this->failures) && empty($this->warnings);
+    }
+
+    /**
+     * Sets the default timeout for tests
+     */
+    public function setDefaultTimeLimit(int $timeout)
+    {
+        $this->defaultTimeLimit = $timeout;
     }
 
     /**
