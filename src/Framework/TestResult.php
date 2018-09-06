@@ -677,12 +677,21 @@ class TestResult implements Countable
 
         PHP_Timer::start();
 
+        echo(" test instanceof WarningTestCase " .  $test instanceof WarningTestCase );
+        echo("\n Before Mike Testing  this->enforceTimeLimit " .  $this->enforceTimeLimit );
+        echo("\n Before Mike Testing  this->defaultTimeLimit " .  $this->defaultTimeLimit);
+        echo("\n Before Mike Testing  test->getSize() " .  $test->getSize());
+        echo("\n extension_loaded('pcntl') " .  extension_loaded('pcntl'));
+        echo("\n class_exists(Invoker::class) " .  class_exists(Invoker::class));
+        echo("\n \PHPUnit\Util\Test::UNKNOWN) " .  \PHPUnit\Util\Test::UNKNOWN);
+
         try {
             if (!$test instanceof WarningTestCase &&
                 ($this->defaultTimeLimit || $test->getSize() != \PHPUnit\Util\Test::UNKNOWN) &&
                 $this->enforceTimeLimit &&
                 extension_loaded('pcntl') && class_exists(Invoker::class)
             ) {
+                echo("Mike Testing");
                 switch ($test->getSize()) {
                     case \PHPUnit\Util\Test::SMALL:
                         $_timeout = $this->timeoutForSmallTests;
@@ -700,7 +709,7 @@ class TestResult implements Countable
                         $_timeout = $this->defaultTimeLimit;
                         break;
                 }
-
+                echo("\n Before Invoker");
                 $invoker = new Invoker;
                 $invoker->invoke([$test, 'runBare'], [], $_timeout);
             } else {
